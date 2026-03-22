@@ -7,3 +7,5 @@ This repository now contains a production-oriented foundation for **Storm Chaser
 - MVP-ready Luau starter modules for weather, encounters, monetization hooks, and persistence under `src/`
 
 Start with the design doc, then mirror the `src/` tree into Roblox Studio services as outlined in the architecture sections.
+
+Track notable repository updates in `CHANGELOG.md`.
