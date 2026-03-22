@@ -38,6 +38,8 @@ function StormScheduler.new(weatherManager)
 	self._weatherManager = weatherManager
 	self._running = false
 	self._defaultDowntime = NumberRange.new(25, 45)
+	self._phase = "Idle"
+	self._nextTransitionAt = 0
 	return self
 end
 
@@ -49,6 +51,10 @@ function StormScheduler:_pickEventForRarity(rarity: string): string
 		end
 	end
 
+	if #matching == 0 then
+		return WeatherConfig.DefaultEventId
+	end
+
 	return matching[math.random(1, #matching)]
 end
 
@@ -58,28 +64,75 @@ function StormScheduler:_pickBiomeForEvent(eventId: string): string
 	return supportedBiomes[math.random(1, #supportedBiomes)]
 end
 
+function StormScheduler:_scheduleDowntime(now: number?)
+	local currentTime = now or os.time()
+	self._phase = "Downtime"
+	self._nextTransitionAt = currentTime
+		+ math.random(self._defaultDowntime.Min, self._defaultDowntime.Max)
+end
+
+function StormScheduler:_startScheduledEvent()
+	local rarity = weightedRoll(WeatherConfig.RarityWeights)
+	local eventId = self:_pickEventForRarity(rarity)
+	local biome = self:_pickBiomeForEvent(eventId)
+	local state = self._weatherManager:setWeather(eventId, biome)
+	self._phase = "Active"
+	self._nextTransitionAt = state.endsAt
+	return state
+end
+
+function StormScheduler:_tick()
+	local now = os.time()
+	local currentState = self._weatherManager:getCurrentState()
+
+	if currentState then
+		self._phase = "Active"
+		self._nextTransitionAt = currentState.endsAt
+
+		if now >= currentState.endsAt then
+			self._weatherManager:clearWeather()
+			self:_scheduleDowntime(now)
+		end
+
+		return
+	end
+
+	if self._phase == "Idle" then
+		self:_scheduleDowntime(now)
+		return
+	end
+
+	if now >= self._nextTransitionAt then
+		self:_startScheduledEvent()
+	end
+end
+
 function StormScheduler:start()
 	if self._running then
 		return
 	end
 	self._running = true
+	self._phase = "Idle"
+	self._nextTransitionAt = os.time()
 
 	task.spawn(function()
 		while self._running do
-			local rarity = weightedRoll(WeatherConfig.RarityWeights)
-			local eventId = self:_pickEventForRarity(rarity)
-			local biome = self:_pickBiomeForEvent(eventId)
-			local state = self._weatherManager:setWeather(eventId, biome)
-			local remaining = math.max(1, state.endsAt - os.time())
-			task.wait(remaining)
-			self._weatherManager:clearWeather()
-			task.wait(math.random(self._defaultDowntime.Min, self._defaultDowntime.Max))
+			self:_tick()
+			task.wait(1)
 		end
 	end)
 end
 
+function StormScheduler:forceEvent(eventId: string, biome: string, durationOverride: number?)
+	local state = self._weatherManager:setWeather(eventId, biome, durationOverride)
+	self._phase = "Active"
+	self._nextTransitionAt = state.endsAt
+	return state
+end
+
 function StormScheduler:stop()
 	self._running = false
+	self._phase = "Idle"
 end
 
 return StormScheduler

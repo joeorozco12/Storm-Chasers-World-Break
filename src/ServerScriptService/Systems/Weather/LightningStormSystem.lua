@@ -17,6 +17,7 @@ end
 
 function LightningStormSystem:_getEligibleTargets(): { BasePart }
 	local targets = {}
+	self._lightningFolder = Workspace:FindFirstChild("LightningTargets")
 	if not self._lightningFolder then
 		return targets
 	end

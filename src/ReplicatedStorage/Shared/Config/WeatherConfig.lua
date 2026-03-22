@@ -4,6 +4,11 @@
 
 local WeatherConfig = {
 	DefaultEventId = "PassingRain",
+	DeveloperDefaults = {
+		forceEventId = "CataclysmicLightningFront",
+		forceBiome = "ThunderstepPlains",
+		forceDuration = 90,
+	},
 	EventCatalog = {
 		PassingRain = {
 			id = "PassingRain",
@@ -66,5 +71,23 @@ local WeatherConfig = {
 		{ primary = "HeavyThunderstorm", secondary = "WindSquall", result = "Supercell" },
 	},
 }
+
+function WeatherConfig.getEventDescriptor(eventId: string)
+	return WeatherConfig.EventCatalog[eventId]
+end
+
+function WeatherConfig.isBiomeSupported(eventId: string, biome: string): boolean
+	local descriptor = WeatherConfig.getEventDescriptor(eventId)
+	if not descriptor then
+		return false
+	end
+
+	local supportedBiomes = descriptor.biomes
+	if not supportedBiomes then
+		return true
+	end
+
+	return table.find(supportedBiomes, biome) ~= nil
+end
 
 return WeatherConfig

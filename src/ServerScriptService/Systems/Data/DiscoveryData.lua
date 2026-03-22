@@ -44,7 +44,11 @@ function DiscoveryData.newProfile(): DiscoveryBlob
 	}
 end
 
-function DiscoveryData.recordCreature(profile: DiscoveryBlob, creatureId: string, researchReward: number)
+function DiscoveryData.recordCreature(
+	profile: DiscoveryBlob,
+	creatureId: string,
+	researchReward: number
+)
 	profile.discoveries.creatures[creatureId] = (profile.discoveries.creatures[creatureId] or 0) + 1
 	profile.currencies.researchNotes += researchReward
 end

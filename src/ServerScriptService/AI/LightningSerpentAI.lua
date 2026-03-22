@@ -5,19 +5,23 @@
 local LightningSerpentAI = {}
 LightningSerpentAI.__index = LightningSerpentAI
 
-function LightningSerpentAI.new(model: Model)
+function LightningSerpentAI.new(model: Model, center: Vector3?)
 	local self = setmetatable({}, LightningSerpentAI)
 	self._model = model
 	self._running = false
 	self._angle = 0
-	self._center = Vector3.new(0, 120, 0)
+	self._center = center or Vector3.new(0, 120, 0)
 	self._radius = 180
 	return self
 end
 
 function LightningSerpentAI:_stepOrbit()
 	self._angle += math.rad(10)
-	local offset = Vector3.new(math.cos(self._angle) * self._radius, math.sin(self._angle * 2) * 18, math.sin(self._angle) * self._radius)
+	local offset = Vector3.new(
+		math.cos(self._angle) * self._radius,
+		math.sin(self._angle * 2) * 18,
+		math.sin(self._angle) * self._radius
+	)
 	local position = self._center + offset
 	self._model:PivotTo(CFrame.new(position, self._center))
 end

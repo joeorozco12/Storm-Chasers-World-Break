@@ -12,6 +12,7 @@ local REMOTE_EVENT_NAMES = {
 	"CreatureEncounterStarted",
 	"CreatureEncounterEnded",
 	"StormSeedRequested",
+	"ForceStormEventRequested",
 	"PurchaseFeedback",
 	"JournalUpdated",
 }

@@ -15,10 +15,14 @@ end
 function CreatureEncounterService:handleWeatherChanged()
 	local state = self._weatherManager:getCurrentState()
 	if state and state.eventId == "CataclysmicLightningFront" then
-		self._lightningSerpentController:tryStartEncounter()
+		if self._lightningSerpentController:tryStartEncounter() then
+			return "LightningSerpent"
+		end
 	else
 		self._lightningSerpentController:endEncounter("Weather moved on")
 	end
+
+	return nil
 end
 
 return CreatureEncounterService
