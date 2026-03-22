@@ -5,5 +5,6 @@ This repository now contains a production-oriented foundation for **Storm Chaser
 - a full game vision and systems design document in `docs/GAME_FOUNDATION.md`
 - a Roblox Studio-oriented architecture plan and folder structure
 - MVP-ready Luau starter modules for weather, encounters, monetization hooks, and persistence under `src/`
+- a concrete MVP map-slice foundation for `StarterBasin -> ThunderstepPlains`, including landmarks, weather zones, route metadata, and encounter anchors
 
 Start with the design doc, then mirror the `src/` tree into Roblox Studio services as outlined in the architecture sections.

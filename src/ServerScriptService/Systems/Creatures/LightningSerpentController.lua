@@ -12,9 +12,14 @@ local LightningSerpentAI = require(ServerScriptService.AI.LightningSerpentAI)
 local LightningSerpentController = {}
 LightningSerpentController.__index = LightningSerpentController
 
-function LightningSerpentController.new(weatherManager, remotesFolder: Folder)
+local function vectorFromConfig(position)
+	return Vector3.new(position.x, position.y, position.z)
+end
+
+function LightningSerpentController.new(weatherManager, remotesFolder: Folder, mapSliceService)
 	local self = setmetatable({}, LightningSerpentController)
 	self._weatherManager = weatherManager
+	self._mapSliceService = mapSliceService
 	self._encounterStartedRemote = remotesFolder:WaitForChild("CreatureEncounterStarted") :: RemoteEvent
 	self._encounterEndedRemote = remotesFolder:WaitForChild("CreatureEncounterEnded") :: RemoteEvent
 	self._activeModel = nil :: Model?
@@ -41,6 +46,13 @@ function LightningSerpentController:_buildSerpentModel(): Model
 	return model
 end
 
+function LightningSerpentController:_getSpawnCFrame(): CFrame
+	local anchorInfo = if self._mapSliceService then self._mapSliceService:getEncounterAnchor("LightningSerpent") else nil
+	local primaryLandmark = if anchorInfo then self._mapSliceService:getLandmark(anchorInfo.primaryLandmarkId) else nil
+	local position = if primaryLandmark then vectorFromConfig(primaryLandmark.position) else Vector3.new(0, 120, 0)
+	return CFrame.new(position + Vector3.new(0, 120, 0))
+end
+
 function LightningSerpentController:tryStartEncounter()
 	local currentState = self._weatherManager:getCurrentState()
 	if not currentState or currentState.eventId ~= "CataclysmicLightningFront" then
@@ -51,7 +63,7 @@ function LightningSerpentController:tryStartEncounter()
 	end
 
 	local model = self:_buildSerpentModel()
-	model:PivotTo(CFrame.new(0, 120, 0))
+	model:PivotTo(self:_getSpawnCFrame())
 	self._activeModel = model
 	self._activeAI = LightningSerpentAI.new(model)
 	self._activeAI:start()
