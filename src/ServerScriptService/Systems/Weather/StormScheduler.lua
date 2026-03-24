@@ -8,13 +8,6 @@ local WeatherConfig = require(ReplicatedStorage.Shared.Config.WeatherConfig)
 local StormScheduler = {}
 StormScheduler.__index = StormScheduler
 
-local BIOMES = {
-	"StarterBasin",
-	"ThunderstepPlains",
-	"GlassreefCoast",
-	"MistwoodCanopy",
-}
-
 local function weightedRoll(weights: { [string]: number }): string
 	local total = 0
 	for _, weight in weights do
@@ -33,9 +26,10 @@ local function weightedRoll(weights: { [string]: number }): string
 	return "Normal"
 end
 
-function StormScheduler.new(weatherManager)
+function StormScheduler.new(weatherManager, biomeProvider)
 	local self = setmetatable({}, StormScheduler)
 	self._weatherManager = weatherManager
+	self._biomeProvider = biomeProvider
 	self._running = false
 	self._defaultDowntime = NumberRange.new(25, 45)
 	self._phase = "Idle"
@@ -60,7 +54,28 @@ end
 
 function StormScheduler:_pickBiomeForEvent(eventId: string): string
 	local descriptor = WeatherConfig.EventCatalog[eventId]
-	local supportedBiomes = descriptor.biomes or BIOMES
+	local activeBiomes = if self._biomeProvider and self._biomeProvider.getBiomeIds then self._biomeProvider:getBiomeIds() else nil
+	local supportedBiomes = descriptor.biomes or activeBiomes
+
+	if activeBiomes and descriptor.biomes then
+		local activeLookup = {}
+		for _, biomeId in ipairs(activeBiomes) do
+			activeLookup[biomeId] = true
+		end
+
+		local filtered = {}
+		for _, biomeId in ipairs(descriptor.biomes) do
+			if activeLookup[biomeId] then
+				table.insert(filtered, biomeId)
+			end
+		end
+
+		if #filtered > 0 then
+			supportedBiomes = filtered
+		end
+	end
+
+	assert(supportedBiomes and #supportedBiomes > 0, string.format("No active biomes support weather event '%s'", eventId))
 	return supportedBiomes[math.random(1, #supportedBiomes)]
 end
 

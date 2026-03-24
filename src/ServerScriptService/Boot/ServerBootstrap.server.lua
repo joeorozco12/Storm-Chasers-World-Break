@@ -16,6 +16,9 @@ local WeatherManager = require(ServerScriptService.Systems.Weather.WeatherManage
 local StormScheduler = require(ServerScriptService.Systems.Weather.StormScheduler)
 local LightningStormSystem = require(ServerScriptService.Systems.Weather.LightningStormSystem)
 local WetSurfaceService = require(ServerScriptService.Systems.Weather.WetSurfaceService)
+local MapSliceService = require(ServerScriptService.Systems.World.MapSliceService)
+local LightningSerpentController = require(ServerScriptService.Systems.Creatures.LightningSerpentController)
+local CreatureEncounterService = require(ServerScriptService.Systems.Creatures.CreatureEncounterService)
 local LightningSerpentController =
 	require(ServerScriptService.Systems.Creatures.LightningSerpentController)
 local CreatureEncounterService =
@@ -27,14 +30,18 @@ local StormSeedService = require(ServerScriptService.Systems.Monetization.StormS
 WorldBootstrap.build()
 
 local remotesFolder = RemoteSetup.initialize()
+local mapSliceService = MapSliceService.new()
 local purchaseFeedbackRemote = remotesFolder:WaitForChild("PurchaseFeedback") :: RemoteEvent
 local forceStormEventRequested =
 	remotesFolder:WaitForChild("ForceStormEventRequested") :: RemoteEvent
 local requestForecast = remotesFolder:WaitForChild("RequestForecast") :: RemoteFunction
 local weatherManager = WeatherManager.new(remotesFolder)
-local stormScheduler = StormScheduler.new(weatherManager)
+local stormScheduler = StormScheduler.new(weatherManager, mapSliceService)
 local lightningStormSystem = LightningStormSystem.new(weatherManager)
 local wetSurfaceService = WetSurfaceService.new(weatherManager)
+local lightningSerpentController = LightningSerpentController.new(weatherManager, remotesFolder, mapSliceService)
+local creatureEncounterService = CreatureEncounterService.new(weatherManager, lightningSerpentController)
+local stormSeedService = StormSeedService.new(weatherManager, remotesFolder)
 local lightningSerpentController = LightningSerpentController.new(weatherManager, remotesFolder)
 local creatureEncounterService =
 	CreatureEncounterService.new(weatherManager, lightningSerpentController)

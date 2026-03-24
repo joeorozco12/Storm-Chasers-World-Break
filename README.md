@@ -3,6 +3,9 @@
 This repository contains the Roblox-first bootstrap for **Storm Chasers: World Break**:
 
 - a full game vision and systems design document in `docs/GAME_FOUNDATION.md`
+- a Roblox Studio-oriented architecture plan and folder structure
+- MVP-ready Luau starter modules for weather, encounters, monetization hooks, and persistence under `src/`
+- a concrete MVP map-slice foundation for `StarterBasin -> ThunderstepPlains`, including landmarks, weather zones, route metadata, and encounter anchors
 - a publish-ready Roblox store page package in `docs/STORE_PAGE_PACKAGE.md`
 - a Rojo-based Luau source tree under `src/`
 - a Studio-ready MVP bootstrap for weather, encounters, monetization hooks, player journal data, and a development play space
